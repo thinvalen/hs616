@@ -1,23 +1,19 @@
 ---
 title: "Data Simulation project"
 author: "Valen Chen"
-date: "2017æ’Ÿ<b4>5<e6><9c><88>13<e6>î£™"
-output:
-  pdf_document: default
-  html_document: default
+date: "2017/5/13"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+####  Data description
+There are 200 players and 26 out of 37 columns are performance¡¦s data include before and after surgery.  All of the data is normal distribution and has different standard deviation.
 
-```{r cars}
+#### Generating Data
+
+
+```{r geneate data}
 generatedata <- function(N){
   age <- round(rnorm(N,mean = 28.4, sd = 4.3))
   bodymassindex <- round(rnorm(N, mean = 27.1, sd = 4),2)
@@ -69,12 +65,70 @@ generatedata <- function(N){
 
 set.seed(123)
 tjdataset <- generatedata(200)
-tjdataset$Pitching_style <- ifelse(tjdataset$Pitching_style == 'overhead',0,1)
-tjdataset$Pitching_position <- ifelse(tjdataset$Pitching_position == 'starter',0,(ifelse(tjdataset$Pitching_position == 'middle reliever' ,1,2)))
-tjdataset$Side_of_injury <- ifelse(tjdataset$Side_of_injury == 'right',0,1)
-fit_pitching_style_after_all <- lm(tjdataset$Pitching_style ~ tjdataset$Innings_pitched_per_season_after + tjdataset$Losses_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
-summary(fit_pitching_style_after_all)
 ```
+
+Because in some columns the standard deviation is too big and will generate negative data which make no sense in baseball game. Although the standard deviation will change after I add the abs function.  It will be easier to simulate. 
+
+
+#### Find correlation
+```{r}
+tjdatasetfit <- tjdataset
+tjdatasetfit$Pitching_style <- ifelse(tjdatasetfit$Pitching_style == 'overhead',0,1)
+tjdatasetfit$Pitching_position <- ifelse(tjdatasetfit$Pitching_position == 'starter',0,(ifelse(tjdataset$Pitching_position == 'middle reliever' ,1,2)))
+tjdatasetfit$Side_of_injury <- ifelse(tjdatasetfit$Side_of_injury == 'right',0,1)
+
+
+pitching_style_subset_before <- tjdataset[12:24]
+cor(tjdataset$Pitching_style,pitching_style_subset_before)
+cor(tjdataset$Pitching_position,pitching_style_subset_before)
+cor(tjdataset$Side_of_injury,pitching_style_subset_before)
+
+pitching_style_subset_after <- tjdataset[25:37]
+cor(tjdataset$Pitching_style,pitching_style_subset_after)
+cor(tjdataset$Pitching_position,pitching_style_subset_after)
+cor(tjdataset$Side_of_injury,pitching_style_subset_after)
+```
+
+I divided the data into two sets.  And find the correlation between categorical variable and perfromance's data after the surgery.
+
+In each categoric data I list 5 of the related variable no matter it is positive or negative relative.
+
+Pitching style:
+*Innings_pitched_per_season_after
+*Complete_games_per_season_after
+*Runs_allowed_per_season_after
+*Hits_allowed_per_season_after
+*Losses_per_season_after
+
+Pitching position:
+*Innings_pitched_per_game_after 
+*Innings_pitched_per_season_after 
+*Game_played_after_surgery_after
+*Complete_games_per_season_after 
+*Shutouts_per_season_after
+
+Side of injury:
+*Complete_games_per_season_after
+*Strikeouts_per_season_after
+*ERA_per_season_after
+*Losses_per_season_after
+*Runs_allowed_per_season_after
+
+Combine these results, I will choose 
+*Innings_pitched_per_season_after
+*Complete_games_per_season_after
+*Runs_allowed_per_season_after
+to run t test with data from before surgery to see the difference in pitcher's performance
+
+```{r}
+t.test(tjdataset$Innings_pitched_per_season_before,tjdataset$Innings_pitched_per_season_after)
+t.test(tjdataset$Complete_games_per_season_before,tjdataset$Complete_games_per_season_after)
+t.test(tjdataset$Runs_allowed_per_season_before,tjdataset$Runs_allowed_per_season_after)
+```
+
+After that I want to find some good models between three categorical variable and performance's data after surgery.
+
+
 
 ## Including Plots
 

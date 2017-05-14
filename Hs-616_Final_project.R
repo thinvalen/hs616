@@ -34,7 +34,7 @@ generatedata <- function(N){
   ERA_per_season_after <- abs(round(rnorm(N, mean = 4.18 , sd = 1.36),2))
   Complete_games_per_season_after <- abs(round(rnorm(N, mean = 0.224 , sd = 0.529),2))
   Shutouts_per_season_after <- abs(round(rnorm(N, mean = 0.091 , sd = 0.247),2))
-  Runs_allowed_per_season_after <- abs(round(rnorm(N, mean = 0.224 , sd = 0.529),2))
+  Runs_allowed_per_season_after <- abs(round(rnorm(N, mean = 30.2 , sd = 23.5),2))
   Home_runs_allowed_per_season_after <- abs(round(rnorm(N, mean = 6.7 , sd = 5.21),2))
   Walks_allowed_per_season <- abs(round(rnorm(N, mean = 21.6 , sd = 15.7),2))
   data.frame(age,bodymassindex,Total_year_played,Year_of_surgery,Age_surgery,Years_after_surgery,Months_surgery_throwing,
@@ -50,6 +50,8 @@ generatedata <- function(N){
 
 set.seed(123)
 tjdataset <- generatedata(200)
+
+tjdatasetfit <- tjdataset
 
 ggplot(tjdataset, aes(x = Innings_pitched_per_game_before, y = Strikeouts_per_season_before, color = Pitching_style))+
   geom_point(shape=1)+
@@ -91,9 +93,9 @@ ggplot(tjdataset) +
   scale_color_discrete(name ="Tommy Surgey", 
                        labels=c("before", "after"))  
 
-tjdataset$Pitching_style <- ifelse(tjdataset$Pitching_style == 'overhead',0,1)
-tjdataset$Pitching_position <- ifelse(tjdataset$Pitching_position == 'starter',0,(ifelse(tjdataset$Pitching_position == 'middle reliever' ,1,2)))
-tjdataset$Side_of_injury <- ifelse(tjdataset$Side_of_injury == 'right',0,1)
+tjdatasetfit$Pitching_style <- ifelse(tjdatasetfit$Pitching_style == 'overhead',0,1)
+tjdatasetfit$Pitching_position <- ifelse(tjdatasetfit$Pitching_position == 'starter',0,(ifelse(tjdataset$Pitching_position == 'middle reliever' ,1,2)))
+tjdatasetfit$Side_of_injury <- ifelse(tjdatasetfit$Side_of_injury == 'right',0,1)
 
 
 pitching_style_subset_before <- tjdataset[12:24]
@@ -106,11 +108,48 @@ cor(tjdataset$Pitching_style,pitching_style_subset_after)
 cor(tjdataset$Pitching_position,pitching_style_subset_after)
 cor(tjdataset$Side_of_injury,pitching_style_subset_after)
 
+### t test
+t.test(tjdataset$Innings_pitched_per_season_before,tjdataset$Innings_pitched_per_season_after)
+t.test(tjdataset$Complete_games_per_season_before,tjdataset$Complete_games_per_season_after)
+t.test(tjdataset$Runs_allowed_per_season_before,tjdataset$Runs_allowed_per_season_after)
 
 
-fit_pitching_style_before <- lm(tjdataset$Pitching_style ~ tjdataset$Strikeouts_per_season_before + tjdataset$ERA_per_season_before + tjdataset$Innings_pitched_per_game_before, data = tjdataset)
-summary(fit_pitching_style_before)
-plot(fit_pitching_style_before)
+ggplot(tjdataset) + 
+  geom_point(aes(x = age, y = Innings_pitched_per_season_after,color = Pitching_style))
 
-fit_pitching_style_after <- lm(tjdataset$Pitching_style ~ tjdataset$Strikeouts_per_season_after + tjdataset$ERA_per_season_after + tjdataset$Innings_pitched_per_game_after, data = tjdataset)
-summary(fit_pitching_style_after)
+#### Pitching_style model
+fit_pitching_style_after_all <- lm(tjdataset$Pitching_style ~ tjdataset$Innings_pitched_per_season_after + tjdataset$Losses_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_pitching_style_after_all)
+plot(fit_pitching_style_after_all)
+
+fit_pitching_style_after_loss_runs<- lm(tjdataset$Pitching_style ~ tjdataset$Losses_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_pitching_style_after_loss_runs)
+
+fit_pitching_style_after_inn_runs <- lm(tjdataset$Pitching_style ~ tjdataset$Innings_pitched_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_pitching_style_after_inn_runs)
+
+fit_pitching_style_after_inn <- lm(tjdataset$Pitching_style ~ tjdataset$Innings_pitched_per_season_after, data = tjdataset)
+summary(fit_pitching_style_after_inn)
+
+
+#### Pitching_position model
+fit_pitching_position_after_all <- lm(tjdataset$Pitching_position ~ tjdataset$Innings_pitched_per_season_after + tjdataset$Losses_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_pitching_position_after_all)
+
+fit_pitching_position_after_loss_runs <- lm(tjdataset$Pitching_style ~ tjdataset$Losses_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_pitching_position_after_loss_runs)
+
+fit_pitching_position_after_runs <- lm(tjdataset$Pitching_style ~ tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_pitching_position_after_runs)
+
+### Side_of_injury model
+fit_side_injury_after_all <- lm(tjdataset$Side_of_injury ~ tjdataset$Innings_pitched_per_season_after + tjdataset$Losses_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_side_injury_after_all)
+
+fit_side_injury_after_loss_runs <- lm(tjdataset$Side_of_injury ~ tjdataset$Losses_per_season_after + tjdataset$Runs_allowed_per_season_after, data = tjdataset)
+summary(fit_side_injury_after_loss_runs)
+
+fit_side_injury_after_loss <- lm(tjdataset$Side_of_injury ~ tjdataset$Runs_allowed_per_season_after , data = tjdataset)
+summary(fit_side_injury_after_loss)
+
+
