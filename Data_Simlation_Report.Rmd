@@ -94,30 +94,30 @@ I divided the data into two sets.  And find the correlation between categorical 
 In each categoric data I list 5 of the related variable no matter it is positive or negative relative.
 
 Pitching style:
-*Innings_pitched_per_season_after
-*Complete_games_per_season_after
-*Runs_allowed_per_season_after
-*Hits_allowed_per_season_after
-*Losses_per_season_after
+* Innings_pitched_per_season_after
+* Complete_games_per_season_after
+* Runs_allowed_per_season_after
+* Hits_allowed_per_season_after
+* Losses_per_season_after
 
 Pitching position:
-*Innings_pitched_per_game_after 
-*Innings_pitched_per_season_after 
-*Game_played_after_surgery_after
-*Complete_games_per_season_after 
-*Shutouts_per_season_after
+* Innings_pitched_per_game_after 
+* Innings_pitched_per_season_after 
+* Game_played_after_surgery_after
+* Complete_games_per_season_after 
+* Shutouts_per_season_after
 
 Side of injury:
-*Complete_games_per_season_after
-*Strikeouts_per_season_after
-*ERA_per_season_after
-*Losses_per_season_after
-*Runs_allowed_per_season_after
+* Complete_games_per_season_after
+* Strikeouts_per_season_after
+* ERA_per_season_after
+* Losses_per_season_after
+* Runs_allowed_per_season_after
 
 Combine these results, I will choose 
-*Innings_pitched_per_season_after
-*Complete_games_per_season_after
-*Runs_allowed_per_season_after
+* Innings_pitched_per_season_after
+* Complete_games_per_season_after
+* Runs_allowed_per_season_after
 to run t test with data from before surgery to see the difference in pitcher's performance
 
 ```{r}
@@ -128,14 +128,3 @@ t.test(tjdataset$Runs_allowed_per_season_before,tjdataset$Runs_allowed_per_seaso
 
 After that I want to find some good models between three categorical variable and performance's data after surgery.
 
-
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
