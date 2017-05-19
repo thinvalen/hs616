@@ -174,7 +174,7 @@ control_tjdatasetfit$Side_of_injury <- ifelse(control_tjdatasetfit$Side_of_injur
 
 There are six performance data showed significantly improved performance versus before. I want to find if there is a signigiciant increase because of this three categorical variables.  What I will do is Start from all six variables and remove significent different variable one by one.
 
-Pitching style:
+##### Pitching style:
 ```{r}
 fit_pitching_style_after_all <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Losses_per_season_after + case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
 summary(fit_pitching_style_after_all)
@@ -196,7 +196,7 @@ summary(fit_pitching_style_after)
 ```
 
 
-Pitching Position:
+##### Pitching Position:
 ```{r}
 fit_pitching_position_after_all <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Losses_per_season_after + case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
 summary(fit_pitching_position_after_all)
@@ -216,7 +216,7 @@ summary(fit_pitching_position_after_2)
 fit_pitching_position_after <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Hits_allowed_per_season_after , data = case_tjdatasetfit)
 summary(fit_pitching_position_after) ##lowest p value
 ```
-Side of Injury:
+##### Side of Injury:
 ```{r}
 fit_side_injury_after_all <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Losses_per_season_after + case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
 summary(fit_side_injury_after_all)
