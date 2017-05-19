@@ -263,4 +263,6 @@ ggplot(tjdataset) +
 
 2. Comparison between case and controls, cases had significiantly fewer losses per person.  In addition, cases had a significiantly lower ERA and allowed fewer walked and hits per inning pitched.
 
-3. The efficiency of pitcher's such as inning per game or inning per season will reduce after surgery.  Also the performance's data such as hits allowed per season or runs allowed will reduce too.  I think this is because pitcher after surgery can not play as much games and throw much innings as before. Teams will protect them by cutting their pitched innings or shut them down before the season end.  Another reseason is the numbers of strikeouts, walks hits given up, runs given up and homerun given up are dependent on the number of innings pitched.
+3. Those three categorical column didn't have much linear relationship with those six performance. 
+
+4. The efficiency of pitcher's such as inning per game or inning per season will reduce after surgery.  Also the performance's data such as hits allowed per season or runs allowed will reduce too.  I think this is because pitcher after surgery can not play as much games and throw much innings as before. Teams will protect them by cutting their pitched innings or shut them down before the season end.  Another reseason is the numbers of strikeouts, walks hits given up, runs given up and homerun given up are dependent on the number of innings pitched.
