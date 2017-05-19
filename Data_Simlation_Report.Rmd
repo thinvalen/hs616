@@ -4,27 +4,26 @@ author: "Valen Chen"
 date: "2017/5/13"
 ---
 
+#### Data Simulation
+Base on the article :Rate of Return to Pitching and Performance After Tommy John Surgery in Major League Baseball Pitchers
 
-
+#### Background
+Medial ulnar collateral ligament (UCL) reconstruction is a common procedure performed on Major League Baseball (MLB) pitchers in the United States.
 
 ####  Data description
-There are 200 players and 26 out of 37 columns are performance¡¦s data include before and after surgery.  All of the data is normal distribution and has different standard deviation.
+There are 179 players and 26 out of 32 columns are performance¡¦s data include before and after surgery.  All of the data is normal distribution and has different standard deviation.
 
-#### Generating Data
-
+#### Generating case and control Data and add some noises
+Case is people who have under UCL reconstruction surgery
+Control is people who doesn't have surgery.  The controls pitched the same number of years before the index years as the cases pitched before surgery.
 
 ```{r geneate data}
-generatedata <- function(N){
+case_generatedata <- function(N){
   age <- round(rnorm(N,mean = 28.4, sd = 4.3))
   bodymassindex <- round(rnorm(N, mean = 27.1, sd = 4),2)
-  Total_year_played <- round(rnorm(N, mean = 5.6, sd = 2))
-  Year_of_surgery <-  sample(c(2013,2014,2015),N, replace = TRUE)
-  Age_surgery <- sample(c(23,24,25),N, replace = TRUE)        
-  Years_after_surgery <- sample(c(2016,2017),N, replace = TRUE)      
-  Months_surgery_throwing <- round(rnorm(N, mean = 11, sd = 2),2)  
-  Months_pitching <- abs(round(rnorm(N, mean = 20.5, sd = 9.72),2))  
+  Season_mlb_experience <- abs(round(rnorm(N, mean = 9.14, sd = 4.75)))
   Pitching_style <-  sample(c('overhead','sidearm'),N , replace = TRUE) #0 overhead 1 sidearm
-  Pitching_position <- sample(c('starter', 'middle reliever', 'closer'),N, replace = TRUE) #0 starter 1 middle reliever 2 closer
+  Pitching_position <- sample(c('starter', 'middle reliever', 'closer'),N, prob=c(0.399,0.493,0.108),replace = TRUE) #0 starter 1 middle reliever 2 closer
   Side_of_injury <- sample(c('right', 'left'),N, replace = TRUE) #0 right #1 left
   Strikeouts_per_season_before <- abs(round(rnorm(N, mean = 58.2 , sd = 36.9),2))  
   Games_played_per_season_before <- abs(round(rnorm(N, mean = 27.3 , sd = 15.2),2)) 
@@ -40,7 +39,7 @@ generatedata <- function(N){
   Home_runs_allowed_per_season_before <- abs(round(rnorm(N, mean = 8.73 , sd = 6.07),2))
   Walks_allowed_per_season_before <- abs(round(rnorm(N, mean = 30.3 , sd = 19.8),2))
   Strikeouts_per_season_after <- abs(round(rnorm(N, mean = 45.6 , sd = 38.0),2))  
-  Game_played_after_surgery_after <- abs(round(rnorm(N, mean = 27.1 , sd = 16.7),2))
+  Game_played_per_season_after <- abs(round(rnorm(N, mean = 27.1 , sd = 16.7),2))
   Innings_pitched_per_game_after <- abs(round(rnorm(N, mean = 2.67 , sd = 1.91),2))
   Innings_pitched_per_season_after <- abs(round(rnorm(N, mean = 58.7 , sd = 47.2),2)) 
   Hits_allowed_per_season_after <- abs(round(rnorm(N, mean = 57.8 , sd = 47.4),2))
@@ -51,80 +50,217 @@ generatedata <- function(N){
   Shutouts_per_season_after <- abs(round(rnorm(N, mean = 0.091 , sd = 0.247),2))
   Runs_allowed_per_season_after <- abs(round(rnorm(N, mean = 30.2 , sd = 23.5),2))
   Home_runs_allowed_per_season_after <- abs(round(rnorm(N, mean = 6.7 , sd = 5.21),2))
-  Walks_allowed_per_season <- abs(round(rnorm(N, mean = 21.6 , sd = 15.7),2))
-  data.frame(age,bodymassindex,Total_year_played,Year_of_surgery,Age_surgery,Years_after_surgery,Months_surgery_throwing,
-             Months_pitching,Pitching_style,Pitching_position,Side_of_injury,Strikeouts_per_season_before,
+  Walks_allowed_per_season_after <- abs(round(rnorm(N, mean = 21.6 , sd = 15.7),2))
+  data.frame(age,bodymassindex,Season_mlb_experience,Pitching_style,Pitching_position,Side_of_injury,Strikeouts_per_season_before,
              Games_played_per_season_before,Innings_pitched_per_game_before,Innings_pitched_per_season_before,Hits_allowed_per_season_before,
              Wins_per_season_before,Losses_per_season_before,ERA_per_season_before,Complete_games_per_season_before,
              Shutouts_per_season_before,Runs_allowed_per_season_before,Home_runs_allowed_per_season_before,Walks_allowed_per_season_before,
-             Strikeouts_per_season_after,Game_played_after_surgery_after,Innings_pitched_per_game_after,Innings_pitched_per_season_after,Hits_allowed_per_season_after,
+             Strikeouts_per_season_after,Game_played_per_season_after,Innings_pitched_per_game_after,Innings_pitched_per_season_after,Hits_allowed_per_season_after,
              Wins_per_season_after,Losses_per_season_after,ERA_per_season_after,Complete_games_per_season_after,Shutouts_per_season_after,
-             Runs_allowed_per_season_after,Home_runs_allowed_per_season_after,Walks_allowed_per_season)
+             Runs_allowed_per_season_after,Home_runs_allowed_per_season_after,Walks_allowed_per_season_after)
+}
+
+control_generatedata <- function(N){
+  age <- round(rnorm(N,mean = 28.3, sd = 4.23))
+  bodymassindex <- round(rnorm(N, mean = 27.1, sd = 4),2)
+  Season_mlb_experience <- abs(round(rnorm(N, mean = 8.74, sd = 3.84)))
+  Pitching_style <-  sample(c('overhead','sidearm'),N , replace = TRUE) #0 overhead 1 sidearm
+  Pitching_position <- sample(c('starter', 'middle reliever', 'closer'),N, prob=c(0.392,0.5,0.108),replace = TRUE) #0 starter 1 middle reliever 2 closer
+  Side_of_injury <- sample(c('right', 'left'),N, replace = TRUE) #0 right #1 left
+  Strikeouts_per_season_before <- abs(round(rnorm(N, mean = 62.3 , sd = 44.7),2))  
+  Games_played_per_season_before <- abs(round(rnorm(N, mean = 25.9 , sd = 13.7),2)) 
+  Innings_pitched_per_game_before <- abs(round(rnorm(N, mean = 3.8 , sd = 1.96),2))
+  Innings_pitched_per_season_before <- abs(round(rnorm(N, mean = 85.3 , sd = 56.1),2)) 
+  Hits_allowed_per_season_before <- abs(round(rnorm(N, mean = 86.2 , sd = 53.2),2)) 
+  Wins_per_season_before <- abs(round(rnorm(N, mean = 5.14 , sd = 3.6),2)) 
+  Losses_per_season_before <- abs(round(rnorm(N, mean = 4.57 , sd = 3.09),2))
+  ERA_per_season_before <- abs(round(rnorm(N, mean = 5.66 , sd = 2.73),2))
+  Complete_games_per_season_before <- abs(round(rnorm(N, mean = 0.625 , sd = 1.7),2))
+  Shutouts_per_season_before <- abs(round(rnorm(N, mean = 0.202 , sd = 0.459),2))
+  Runs_allowed_per_season_before <- abs(round(rnorm(N, mean = 39.5 , sd = 25.1),2))
+  Home_runs_allowed_per_season_before <- abs(round(rnorm(N, mean = 10.1 , sd = 6.75),2))
+  Walks_allowed_per_season_before <- abs(round(rnorm(N, mean = 33.1 , sd = 20.7),2))
+  Strikeouts_per_season_after <- abs(round(rnorm(N, mean = 47.4 , sd = 38.9),2))  
+  Game_played_per_season_after <- abs(round(rnorm(N, mean = 24.2 , sd = 16.7),2))
+  Innings_pitched_per_game_after <- abs(round(rnorm(N, mean = 3.12 , sd = 1.88),2))
+  Innings_pitched_per_season_after <- abs(round(rnorm(N, mean = 65.3 , sd = 51.7),2)) 
+  Hits_allowed_per_season_after <- abs(round(rnorm(N, mean = 69.8 , sd = 49.4),2))
+  Wins_per_season_after <- abs(round(rnorm(N, mean = 2.98 , sd = 2.75),2))
+  Losses_per_season_after <- abs(round(rnorm(N, mean = 4.3 , sd = 2.94),2))
+  ERA_per_season_after <- abs(round(rnorm(N, mean = 6.36 , sd = 3.31),2))
+  Complete_games_per_season_after <- abs(round(rnorm(N, mean = 0.175 , sd = 0.335),2))
+  Shutouts_per_season_after <- abs(round(rnorm(N, mean = 0.069 , sd = 0.164),2))
+  Runs_allowed_per_season_after <- abs(round(rnorm(N, mean = 37.8 , sd = 26.0),2))
+  Home_runs_allowed_per_season_after <- abs(round(rnorm(N, mean = 8.71 , sd = 6.54),2))
+  Walks_allowed_per_season_after <- abs(round(rnorm(N, mean = 25.7 , sd = 16.4),2))
+  data.frame(age,bodymassindex,Season_mlb_experience,Pitching_style,Pitching_position,Side_of_injury,Strikeouts_per_season_before,
+             Games_played_per_season_before,Innings_pitched_per_game_before,Innings_pitched_per_season_before,Hits_allowed_per_season_before,
+             Wins_per_season_before,Losses_per_season_before,ERA_per_season_before,Complete_games_per_season_before,
+             Shutouts_per_season_before,Runs_allowed_per_season_before,Home_runs_allowed_per_season_before,Walks_allowed_per_season_before,
+             Strikeouts_per_season_after,Game_played_per_season_after,Innings_pitched_per_game_after,Innings_pitched_per_season_after,Hits_allowed_per_season_after,
+             Wins_per_season_after,Losses_per_season_after,ERA_per_season_after,Complete_games_per_season_after,Shutouts_per_season_after,
+             Runs_allowed_per_season_after,Home_runs_allowed_per_season_after,Walks_allowed_per_season_after)
 }
 
 
+
 set.seed(123)
-tjdataset <- generatedata(200)
+case_tjdataset <- case_generatedata(179)
+control_tjdataset <- control_generatedata(179)
+rage <- rnorm(179,mean = 0, sd = 1.2)
+rage <- round(rage)
+rbmi <- rnorm(179,mean = 0, sd = 1.2)
+rbmi <- round(rbmi)
+rexperience <- rnorm(179,mean = 0, sd = 1.2) 
+rexperience <- round(rexperience)
+
+
+control_tjdataset$age <- case_tjdataset$age + rage 
+control_tjdataset$bodymassindex <- case_tjdataset$bodymassindex + rbmi
+control_tjdataset$Season_mlb_experience <- case_tjdataset$Season_mlb_experience + rexperience
 ```
 
-Because in some columns the standard deviation is too big and will generate negative data which make no sense in baseball game. Although the standard deviation will change after I add the abs function.  It will be easier to simulate. 
+Because in some columns the standard deviation is too big and will generate negative data which make no sense in baseball game. Although the standard deviation will change after I add the abs function. It won't have much affect on the result.  The article didn't give us the difference between two match set.  I only add a little noise to the match column.
 
 
-#### Find correlation
+#### Student t test comparing result
 ```{r}
-tjdatasetfit <- tjdataset
-tjdatasetfit$Pitching_style <- ifelse(tjdatasetfit$Pitching_style == 'overhead',0,1)
-tjdatasetfit$Pitching_position <- ifelse(tjdatasetfit$Pitching_position == 'starter',0,(ifelse(tjdataset$Pitching_position == 'middle reliever' ,1,2)))
-tjdatasetfit$Side_of_injury <- ifelse(tjdatasetfit$Side_of_injury == 'right',0,1)
+#compare between case and control before surgery
+t.test(case_tjdataset$Innings_pitched_per_season_before,control_tjdataset$Innings_pitched_per_season_before)
+t.test(case_tjdataset$Games_played_per_season_before,control_tjdataset$Games_played_per_season_before)
+t.test(case_tjdataset$Wins_per_season_before,control_tjdataset$Wins_per_season_after)
 
 
-pitching_style_subset_before <- tjdataset[12:24]
-cor(tjdataset$Pitching_style,pitching_style_subset_before)
-cor(tjdataset$Pitching_position,pitching_style_subset_before)
-cor(tjdataset$Side_of_injury,pitching_style_subset_before)
+###
+#compare before and after surgey
+t.test(case_tjdataset$Losses_per_season_before,case_tjdataset$Losses_per_season_after)
+t.test(case_tjdataset$ERA_per_season_before,case_tjdataset$ERA_per_season_after)
+t.test(case_tjdataset$Walks_allowed_per_season_before,case_tjdataset$Walks_allowed_per_season_after)
+t.test(case_tjdataset$Hits_allowed_per_season_before,case_tjdataset$Hits_allowed_per_season_after)
+t.test(case_tjdataset$Runs_allowed_per_season_before,case_tjdataset$Runs_allowed_per_season_after)
+t.test(case_tjdataset$Home_runs_allowed_per_season_before,case_tjdataset$Home_runs_allowed_per_season_after)
 
-pitching_style_subset_after <- tjdataset[25:37]
-cor(tjdataset$Pitching_style,pitching_style_subset_after)
-cor(tjdataset$Pitching_position,pitching_style_subset_after)
-cor(tjdataset$Side_of_injury,pitching_style_subset_after)
+
+###
+#compare between case and control after surgery
+t.test(case_tjdataset$Losses_per_season_after,control_tjdataset$Losses_per_season_after)
+t.test(case_tjdataset$ERA_per_season_after,control_tjdataset$ERA_per_season_after)
+t.test(case_tjdataset$Walks_allowed_per_season_after,control_tjdataset$Walks_allowed_per_season_after)
+t.test(case_tjdataset$Hits_allowed_per_season_after,control_tjdataset$Hits_allowed_per_season_after)
 ```
 
-I divided the data into two sets.  And find the correlation between categorical variable and perfromance's data after the surgery.
 
-In each categoric data I list 5 of the related variable no matter it is positive or negative relative.
+#### Fit model
+
+Make string variable into numberic and be ready to fit model
+```{r}
+case_tjdatasetfit <- case_tjdataset
+control_tjdatasetfit <- control_tjdataset
+
+#############
+#Case
+case_tjdatasetfit$Pitching_style <- ifelse(case_tjdatasetfit$Pitching_style == 'overhead',0,1)
+case_tjdatasetfit$Pitching_position <- ifelse(case_tjdatasetfit$Pitching_position == 'starter',0,(ifelse(case_tjdatasetfit$Pitching_position == 'middle reliever' ,1,2)))
+case_tjdatasetfit$Side_of_injury <- ifelse(case_tjdatasetfit$Side_of_injury == 'right',0,1)
+
+###########################
+#Control
+control_tjdatasetfit$Pitching_style <- ifelse(control_tjdatasetfit$Pitching_style == 'overhead',0,1)
+control_tjdatasetfit$Pitching_position <- ifelse(control_tjdatasetfit$Pitching_position == 'starter',0,(ifelse(control_tjdatasetfit$Pitching_position == 'middle reliever' ,1,2)))
+control_tjdatasetfit$Side_of_injury <- ifelse(control_tjdatasetfit$Side_of_injury == 'right',0,1)
+```
+
+
+
+There are six performance data showed significantly improved performance versus before. I want to find if there is a signigiciant increase because of this three categorical variables.  What I will do is Start from all six variables and remove significent different variable one by one.
 
 Pitching style:
-* Innings_pitched_per_season_after
-* Complete_games_per_season_after
-* Runs_allowed_per_season_after
-* Hits_allowed_per_season_after
-* Losses_per_season_after
-
-Pitching position:
-* Innings_pitched_per_game_after 
-* Innings_pitched_per_season_after 
-* Game_played_after_surgery_after
-* Complete_games_per_season_after 
-* Shutouts_per_season_after
-
-Side of injury:
-* Complete_games_per_season_after
-* Strikeouts_per_season_after
-* ERA_per_season_after
-* Losses_per_season_after
-* Runs_allowed_per_season_after
-
-Combine these results, I will choose 
-* Innings_pitched_per_season_after
-* Complete_games_per_season_after
-* Runs_allowed_per_season_after
-to run t test with data from before surgery to see the difference in pitcher's performance
-
 ```{r}
-t.test(tjdataset$Innings_pitched_per_season_before,tjdataset$Innings_pitched_per_season_after)
-t.test(tjdataset$Complete_games_per_season_before,tjdataset$Complete_games_per_season_after)
-t.test(tjdataset$Runs_allowed_per_season_before,tjdataset$Runs_allowed_per_season_after)
+fit_pitching_style_after_all <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Losses_per_season_after + case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_style_after_all)
+
+fit_pitching_style_after_5 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Losses_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_style_after_5)
+
+fit_pitching_style_after_4 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_style_after_4)
+
+fit_pitching_style_after_3 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_style_after_3)
+
+fit_pitching_style_after_2 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_style_after_2)## lowest p value
+
+fit_pitching_style_after <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Hits_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_style_after)
 ```
 
-After that I want to find some good models between three categorical variable and performance's data after surgery.
 
+Pitching Position:
+```{r}
+fit_pitching_position_after_all <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Losses_per_season_after + case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_position_after_all)
+
+fit_pitching_position_after_5 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_position_after_5)
+
+fit_pitching_position_after_4 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_position_after_4)
+
+fit_pitching_position_after_3 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_position_after_3)
+
+fit_pitching_position_after_2 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_position_after_2)
+
+fit_pitching_position_after <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Hits_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_pitching_position_after) ##lowest p value
+```
+Side of Injury:
+```{r}
+fit_side_injury_after_all <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Losses_per_season_after + case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_side_injury_after_all)
+
+fit_side_injury_after_5 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$ERA_per_season_after + case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_side_injury_after_5)
+
+fit_side_injury_after_4 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after + case_tjdatasetfit$Home_runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_side_injury_after_4)
+
+fit_side_injury_after_3 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after + case_tjdatasetfit$Runs_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_side_injury_after_3)
+
+fit_side_injury_after_2 <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Walks_allowed_per_season_after + case_tjdatasetfit$Hits_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_side_injury_after_2) ##lowest p value
+
+fit_side_injury_after <- lm(case_tjdatasetfit$Pitching_style ~ case_tjdatasetfit$Hits_allowed_per_season_after , data = case_tjdatasetfit)
+summary(fit_side_injury_after) 
+```
+
+Plots between innings and performance's data
+```{r pressure, echo=FALSE}
+######inning v.s runs
+ggplot(tjdataset) + 
+  geom_point(aes(x = Innings_pitched_per_season_before, y = Runs_allowed_per_season_before ,colour = '9999CC')) + 
+  geom_point(aes(x = Innings_pitched_per_season_after, y = Runs_allowed_per_season_after,colour = 'CC6666')) +
+  ggtitle("Innings v.s Runs") +
+  labs(x="Innings pitched per season",y="Runs allowed per season") +
+  scale_color_discrete(name ="Tommy Surgey", 
+                       labels=c("before", "after"))
+######inning v.s hits
+ggplot(tjdataset) + 
+  geom_point(aes(x = Innings_pitched_per_season_before, y = Hits_allowed_per_season_before ,colour = '9999CC')) + 
+  geom_point(aes(x = Innings_pitched_per_season_after, y = Hits_allowed_per_season_before,colour = 'CC6666')) +
+  ggtitle("Innings v.s Hits") +
+  labs(x="Innings pitched per season",y="Hits allowed per season") +
+  scale_color_discrete(name ="Tommy Surgey", 
+                       labels=c("before", "after"))
+
+```
+
+#### Conclusion
+1. The result matched the article's result.  Pitcher's performance after surgery showed siginificantly improved versus before surgery for example fewer losses, fewer walks and allowed fewer hits.
+
+2. Comparison between case and controls, cases had significiantly fewer losses per person.  In addition, cases had a significiantly lower ERA and allowed fewer walked and hits per inning pitched.
+
+3. The efficiency of pitcher's such as inning per game or inning per season will reduce after surgery.  Also the performance's data such as hits allowed per season or runs allowed will reduce too.  I think this is because pitcher after surgery can not play as much games and throw much innings as before. Teams will protect them by cutting their pitched innings or shut them down before the season end.  Another reseason is the numbers of strikeouts, walks hits given up, runs given up and homerun given up are dependent on the number of innings pitched.
